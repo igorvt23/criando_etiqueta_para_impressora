@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="{%lang%}">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title></title>
+</head>
+
+<body>
+    
+    <!-- MODAL4 - Opções de etiquetas-->
+    <div class="modal inmodal fade" id="selecioneOTipoEtiqueta" tabindex="-1" role="dialog" aria-hidden="true"
+        data-keyboard="false" data-backdrop="static" style="width: 100%; height: 100%; position: fixed; margin: auto; top:50%">
+        <div style="width: 30% !important;" class="modal-dialog modal-lg"
+            id="modalArquivo">
+            <div style="height:100%" class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Selecione o Tipo de Etiqueta</h4>
+                </div>
+                <div class="ibox-content" style="width: 100%; display: flex; justify-content: center; flex-wrap: wrap; max-width: 100%; word-wrap: break-word; overflow-wrap: break-word;">
+                    <button style="width: 133px; height: 50px; background-color: #18a689; white-space: pre-line;" class="btn btn-primary dim btn-large-dim acaoSweet" id="tipoEntMateriaPrima">Entrada Matéria Prima</button>
+                    <button style="width: 133px; height: 50px; background-color: #18a689; white-space: pre-line;" class="btn btn-primary dim btn-large-dim acaoSweet" id="tipoEntRetPro">Entrada Retorno Produção</button>
+                    <button style="width: 133px; height: 50px; background-color: #18a689; white-space: pre-line;" class="btn btn-primary dim btn-large-dim acaoSweet" id="tipoSepMateriaPrima">Separação para Produção</button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger dim" style="float: rigth;" data-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- MODAL4 -->
+
+    <!-- MODAL5 - Infos para etiquetas-->
+    <div class="modal inmodal fade" id="selecioneAsInfosEtiqueta" tabindex="-1" role="dialog" aria-hidden="true"
+        data-keyboard="false" data-backdrop="static" style="width: 100%; height: 100%; position: fixed; margin: auto; top:30%">
+        <div style="width: 30% !important;" class="modal-dialog modal-lg"
+            id="modalArquivo">
+            <div style="height:100%" class="modal-content">
+                <div class="modal-header">
+                    <h3 id="tituloSelecioneAsInfosEtiqueta" class="modal-title" style="text-align: center"></h3>
+                </div>
+                <div class="ibox-content">
+                    
+                    <h4 id="tipo_de_item_info" style="text-align: center; "></h4>
+                    <h5 style="text-align: center;">Selecione as Informações Necessárias</h5><br>
+                    <div id="cabecalho_item_info">
+                        <div class='form-group'>
+                            <select data-placeholder="Material..." class="chosen-select" id="material" name="material" style="position: absolute; width: 460px;" {%disabled%} onchange="return carregaPNItem($('#material option:selected').val(), 'nc_item')"></select>
+                        </div>
+                        <div class='form-group'>
+                            <input id='nc_item' type='text' name='nc_item' placeholder="NC..." class='form-control' value="" onblur="return carregaItemPN($('#nc_item').val(), 'material')">
+                        </div>
+                    </div>
+
+                    <div class="emp smp">
+                        <div class='form-group'>
+                            <input id='nf' type='number' name='nf' placeholder='NF...' class='form-control' value="">
+                        </div>
+                    </div>
+                    
+                    <div class="emp smp">
+                        <div class='form-group'>
+                            <input id='cod_fornecedor' type='number' name='cod_fornecedor' placeholder='Código do fornecedor...' class='form-control' value="">
+                        </div>
+                    </div>
+
+                    <div id="entrada_retorno_producao" class="erp">
+                        <div class='form-group'>
+                            <input id='lote' type='text' name='lote' placeholder='Lote...' class='form-control' value="">
+                        </div>
+                    </div>
+
+                    <div id="separacao_materia_prima" class="smp">
+                        <div class='form-group'>
+                            <input id='qtd_material_final' type='number' name='qtd_material_final' placeholder='Qtd. retorno...' class='form-control' value="">
+                        </div>
+                        <div class='form-group'>
+                            <input id='material_bruto' type='text' name='material_bruto' placeholder='Material...' class='form-control' value="">
+                        </div>
+                    </div>
+                    
+                    <div class="emp">
+                        <div class='form-group'>
+                            <select data-placeholder="Separador..." class="chosen-select" id="nome_separador" name="nome_separador" style="position: absolute" {%disabled%}></select>
+                        </div>
+                    </div>
+                    
+                    <div class="emp erp">
+                        <div class='form-group'>
+                            <input id='qtdEntrada' type='number' name='qtdEntrada' placeholder='Qtd. entrada...' class='form-control' min="1" value="">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger dim" style="float: rigth;" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary dim" style="float: rigth;" id="salvarECriarEtiquetas">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- MODAL5 -->
+
+    <script>
+
+        let itens_colabs_estoque = '';
+
+        
+        function opcoesEtiquetas(nc, id_item){
+            $("#nc_item").val(nc);
+            $("#material").val(id_item).trigger('chosen:updated').trigger('change');
+            $("#selecioneOTipoEtiqueta").modal('show');
+            $('.emp').hide();
+            $('.erp').hide();
+            $('.smp').hide();
+        }
+        
+        $(document).on('click', '#tipoEntMateriaPrima', function (){
+            $("#cabecalho_item_info").css('margin', '2px solid #befabe');
+            $("#tipo_de_item_info").text('MATERIAL FRACIONADO');
+            $("#selecioneOTipoEtiqueta").modal('hide');
+            $("#salvarECriarEtiquetas").attr('tipo', 'emp');
+            $("#tituloSelecioneAsInfosEtiqueta").text('Entrada de Matéria Prima');
+            $('.emp').show();
+            $('#selecioneAsInfosEtiqueta').modal('show');
+        });
+        $(document).on('click', '#tipoEntRetPro', function (){
+            
+            $("#cabecalho_item_info").css('margin', '2px solid #befabe');
+            $("#tipo_de_item_info").text('ENTRADA');
+            $("#salvarECriarEtiquetas").attr('tipo', 'erp');
+            $("#selecioneOTipoEtiqueta").modal('hide');
+            $("#tituloSelecioneAsInfosEtiqueta").text('Entrada do Retorno da Produção');
+            $('.erp').show();
+            $('#selecioneAsInfosEtiqueta').modal('show');
+        });
+        $(document).on('click', '#tipoSepMateriaPrima', function (){
+            
+            $("#cabecalho_item_info").css('margin', '2px solid #fad6be');
+            $("#tipo_de_item_info").text('ITEM RETORNADO');
+            $("#salvarECriarEtiquetas").attr('tipo', 'smp');
+            $("#selecioneOTipoEtiqueta").modal('hide');
+            $("#tituloSelecioneAsInfosEtiqueta").text('Separação de Materia Prima');
+            $('.smp').show();
+            $('#selecioneAsInfosEtiqueta').modal('show');
+        });
+
+        $(document).on('click', '#salvarECriarEtiquetas', function(){
+
+            let nc_item = $("#nc_item").val();
+            if (!nc_item.length > 0) {
+                cmsAlert("Atenção", "Parâmetros obrigatórios não foram encontrados!", "pt");
+                return;
+            }
+            
+            let qtd = '';
+            let lote = '';
+            let nf = '';
+            let cod_forn = '';
+            let usuario = '';
+            let material_bruto = '';
+            let qtd_material_final = '';
+            let salvar = false;
+            let tipoEtiqueta = $("#salvarECriarEtiquetas").attr('tipo');
+
+            if(tipoEtiqueta == 'erp'){ // BOTÃO 2 - foto 3
+                qtd = $("#qtdEntrada").val();
+                if (!qtd.length > 0) {
+                    cmsAlert("Atenção", "Informe a quantidade de entrada!", "pt");
+                    return;
+                }
+                lote = $("#lote").val();
+                if (!lote.length > 0) {
+                    cmsAlert("Atenção", "Informe o lote da produção!", "pt");
+                    return;
+                }
+                salvar = true;
+            }
+            else {
+                
+                nf = $("#nf").val();
+                if (!nf.length > 0) {
+                    cmsAlert("Atenção", "Informe a nota fiscal!", "pt");
+                    return;
+                }
+
+                cod_forn = $("#cod_fornecedor").val();
+                if (!cod_forn.length > 0) {
+                    cmsAlert("Atenção", "Informe o código do fornecedor!", "pt");
+                    return;
+                }
+
+                if(tipoEtiqueta == 'emp'){ //BOTÃO 1 - foto 1
+                    let separador = $("#nome_separador option:selected").val();
+                    usuario = $("#usuario_ativo_"+separador).attr('username');
+                    if (!separador.length > 0) {
+                        cmsAlert("Atenção", "Informe o nome do separador!", "pt");
+                        return;
+                    }
+                    qtd = $("#qtdEntrada").val();
+                    if (!qtd.length > 0) {
+                        cmsAlert("Atenção", "Informe a quantidade de entrada!", "pt");
+                        return;
+                    }
+                    salvar = true;
+                } 
+                else if(tipoEtiqueta == 'smp'){ //BOTÃO 3 - foto 2
+                    material_bruto = $("#material_bruto").val();
+                    if (!material_bruto.length > 0) {
+                        cmsAlert("Atenção", "Informe o material de bruto!", "pt");
+                        return;
+                    }
+                    qtd_material_final = $("#qtd_material_final").val();
+                    if (!qtd_material_final.length > 0) {
+                        cmsAlert("Atenção", "Informe a quantidade de retorno!", "pt");
+                        return;
+                    }
+                    salvar = true;
+                } 
+                else {
+                    cmsAlert("Atenção", "Parâmetros obrigatórios não foram encontrados!", "pt");
+                }
+            }
+            let data = new Date();
+
+            let dia = String(data.getDate()).padStart(2, '0');
+            let mes = String(data.getMonth() + 1).padStart(2, '0');
+            let ano = String(data.getFullYear()).slice(-2);
+
+            let data_atual = `${dia}/${mes}/${ano}`;
+            if(salvar){
+
+                const element = document.getElementById('selecioneAsInfosEtiqueta');
+                if (!element) return alert('Element não encontrado!');
+
+                // Create a temporary iframe
+                const iframe = document.createElement('iframe');
+                iframe.style.position = 'fixed';
+                iframe.style.top = '0';
+                iframe.style.left = '0';
+                iframe.style.width = '1px';
+                iframe.style.height = '1px';
+                iframe.style.border = '0';
+                document.body.appendChild(iframe);
+
+                let mensagem = 'Tipo Indefinido';
+                let status = 'Erro';
+                if(tipoEtiqueta == 'emp'){ // BOTÃO 01
+                    if((qtd != null && qtd != '') && (nc_item != null && nc_item != '') && (nf != null && nf != '') && (cod_forn != null && cod_forn != '') && (usuario != null && usuario != '')){
+                        mensagem = 'A etiqueta iniciou o processo de impressão!';
+                        status = 'Successo';
+                        const iframeDoc = iframe.contentWindow.document;
+                        iframeDoc.open();
+                        iframeDoc.write(`<!DOCTYPE html><html>
+                            <head>
+                                <meta charset="UTF-8">
+                                <title>Material Fracionado</title>
+                                <style>
+                                    @media print {
+                                        @page {
+                                            size: 50mm 43.8mm;
+                                            margin: 1mm;
+                                        }
+
+                                        body {
+                                            margin: 0;
+                                        }
+                                    }
+
+                                    body {
+                                        font-family: Arial, sans-serif;
+                                        font-size: 7pt;
+                                    }
+
+                                    table {
+                                        width: 100%;
+                                        border-collapse: collapse;
+                                        border: 2px solid black;
+                                    }
+
+                                    th {
+                                        text-align: center;
+                                        font-size: 7pt;
+                                        border-bottom: 1px solid black;
+                                        padding: 1px;
+                                    }
+
+                                    td {
+                                        border-top: 1px solid black;
+                                        border-right: 1px solid black;
+                                        padding: 1px;
+                                        font-size: 7pt;
+                                    }
+
+                                    td:last-child {
+                                        border-right: none;
+                                    }
+
+                                    .label {
+                                        font-weight: bold;
+                                        width: 35%;
+                                    }
+
+                                    .value {
+                                        width: 65%;
+                                    }
+                                </style>
+                                </head>
+                                <body>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th colspan="2">MATERIAL FRACIONADO</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="label">PN:</td>
+                                                <td class="value">${nc_item}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="label">NF:</td>
+                                                <td class="value">${nf}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="label">DATA:</td>
+                                                <td class="value">${data_atual}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="label">SEPARADOR:</td>
+                                                <td class="value">${usuario}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="label">COD.FORN:</td>
+                                                <td class="value">${cod_forn}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="label">QTD:</td>
+                                                <td class="value">${qtd}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </body>
+                            </html>
+                        `);
+                        iframeDoc.close();
+                        
+                        // Aguarda o iframe renderizar antes de imprimir
+                        iframe.onload = () => {
+                            setTimeout(() => {
+                                iframe.contentWindow.focus();
+                                iframe.contentWindow.print();
+                                setTimeout(() => document.body.removeChild(iframe), 1000);
+                            }, 100);
+                        };
+
+                        // Clean up
+                        setTimeout(() => document.body.removeChild(iframe), 1000);
+                    } else {
+                        mensagem = 'Parâmetros inválidos!';
+                        status = 'Erro';
+                    }
+                }
+                else if (tipoEtiqueta == 'erp'){ // BOTÃO 02
+                    
+                    if((lote != null && lote != '') && (nc_item != null && nc_item != '') && (qtd != null && qtd != '')){
+                        mensagem = 'A etiqueta iniciou o processo de impressão!';
+                        status = 'Successo';
+                        const iframeDoc = iframe.contentWindow.document;
+                        iframeDoc.open();
+                        iframeDoc.write(`<html>
+                                <head>
+                                    <title>Entrada Retorno Produção</title>
+                                    <style>
+                                        @media print {
+                                            @page {
+                                                size: 50mm 43.8mm;
+                                                margin: 2mm;
+                                            }
+                                            body {
+                                                margin: 0;
+                                            }
+                                        }
+
+                                        body {
+                                            font-family: Arial, sans-serif;
+                                            font-size: 7pt;
+                                        }
+
+                                        table {
+                                            width: 100%;
+                                            border-collapse: collapse;
+                                            border: 2px solid black;
+                                        }
+
+                                        th {
+                                            text-align: center;
+                                            font-size: 9pt;
+                                            border-bottom: 2px solid black;
+                                            padding: 2px;
+                                        }
+
+                                        td {
+                                            border-top: 1px solid black;
+                                            border-right: 1px solid black;
+                                            padding: 1px;
+                                            font-size: 7pt;
+                                        }
+
+                                        td:last-child {
+                                            border-right: none;
+                                        }
+
+                                        .label {
+                                            font-weight: bold;
+                                            width: 35%;
+                                        }
+
+                                        .value {
+                                            width: 65%;
+                                        }
+                                    </style>
+                                </head>
+                                <body>
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th colspan="2">ENTRADA</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="label">PN:</td>
+                                                    <td class="value">${nc_item}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="label">LOTE:</td>
+                                                    <td class="value">${lote}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="label">QTD:</td>
+                                                    <td class="value">${qtd}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="label">DATA:</td>
+                                                    <td class="value">${data_atual}</td>
+                                                </tr>
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </body>
+                            </html>
+                        `);
+                        iframeDoc.close();
+                        
+                        // Aguarda o iframe renderizar antes de imprimir
+                        iframe.onload = () => {
+                            setTimeout(() => {
+                                iframe.contentWindow.focus();
+                                iframe.contentWindow.print();
+                                setTimeout(() => document.body.removeChild(iframe), 1000);
+                            }, 100);
+                        };
+
+                        // Clean up
+                        setTimeout(() => document.body.removeChild(iframe), 1000);
+
+                    } else {
+                        mensagem = 'Parâmetros inválidos!';
+                        status = 'Erro';
+                    }
+                }
+                else if (tipoEtiqueta == 'smp'){ // BOTÃO 03
+
+                    if((material_bruto != null && material_bruto != '') && (nc_item != null && nc_item != '') && (nf != null && nf != '') && (cod_forn != null && cod_forn != '') && (qtd_material_final != null && qtd_material_final != '')){
+                        mensagem = 'A etiqueta iniciou o processo de impressão!';
+                        status = 'Successo';
+                        const iframeDoc = iframe.contentWindow.document;
+                        iframeDoc.open();
+                        iframeDoc.write(`<!DOCTYPE html><html>
+                        <head>
+                            <meta charset="UTF-8">
+                            <title>Material Produção CNC</title>
+                            <style>
+                                @media print {
+                                    @page {
+                                        size: 50mm 43.8mm;
+                                        margin: 2mm;
+                                    }
+
+                                    body {
+                                        margin: 0;
+                                    }
+                                }
+
+                                body {
+                                    font-family: Arial, sans-serif;
+                                    font-size: 6pt;
+                                }
+
+                                table {
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                    border: 2px solid black;
+                                }
+
+                                th {
+                                    text-align: center;
+                                    font-size: 8pt;
+                                    border-bottom: 2px solid black;
+                                    padding: 2px;
+                                }
+
+                                td {
+                                    border-top: 1px solid black;
+                                    border-right: 1px solid black;
+                                    padding: 1px;
+                                    font-size: 6pt;
+                                }
+
+                                td:last-child {
+                                    border-right: none;
+                                }
+
+                                .label {
+                                    font-weight: bold;
+                                    width: 35%;
+                                }
+
+                                .value {
+                                    width: 65%;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th colspan="2">MATERIAL PRODUÇÃO CNC</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="label">MATERIAL:</td>
+                                        <td class="value">${material_bruto}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">NF:</td>
+                                        <td class="value">${nf}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">DATA:</td>
+                                        <td class="value">${data_atual}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">QTD LOTE:</td>
+                                        <td class="value">${qtd_material_final}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">PN PÇS:</td>
+                                        <td class="value">${nc_item}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">COD. FORN:</td>
+                                        <td class="value">${cod_forn}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </body>
+                        </html>`);
+                        iframeDoc.close();
+                        
+                        // Aguarda o iframe renderizar antes de imprimir
+                        iframe.onload = () => {
+                            setTimeout(() => {
+                                iframe.contentWindow.focus();
+                                iframe.contentWindow.print();
+                                setTimeout(() => document.body.removeChild(iframe), 1000);
+                            }, 100);
+                        };
+
+                        // Clean up
+                        setTimeout(() => document.body.removeChild(iframe), 1000);
+
+
+                    } else {
+                        mensagem = 'Parâmetros inválidos!';
+                        status = 'Erro';
+                    }
+                }
+
+                cmsAlert(status, mensagem, "pt");
+
+                $("#selecioneAsInfosEtiqueta").modal('hide');
+                $("#qtdEntrada").val('');
+                $("#lote").val('');
+                $("#nf").val('');
+                $("#cod_fornecedor").val('');
+                $("#nome_separador").val('').trigger("chosen:updated");
+                $("#material_bruto").val('');
+                $("#qtd_material_final").val('');
+                $("#nc_item").val('');
+            }
+        });
+    
+    </script>
+</body>
+
+</html>
